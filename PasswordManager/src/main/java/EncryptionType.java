@@ -1,2 +1,3 @@
-package PACKAGE_NAME;public enum EncryptionType {
+public enum EncryptionType {
+    BASE_64,
 }

@@ -1,40 +1,43 @@
 import java.io.File;
 import java.io.IOException;
-import java.util.Scanner;
 
-public class PasswordUtils {
+public class PasswordManagerUtils {
 
-    public static void showPassword(String alias) {
-
+    public static Credentials showPassword(String alias, Configuration config, String masterPassword) throws IOException {
+        Credentials cred = null;
+        for (Configuration.StorageDescription rd: config.repositories) {
+            PasswordStorage rep = PasswordRepositoryFactory.getRepository(rd);
+            cred = rep.getEntry(alias, masterPassword);
+            if (cred != null) {
+                return cred;
+            }
+        }
+        return null;
     }
 
-    public static void initRep(Configuration config) {
-        Configuration.RepDescription rd = new Configuration.RepDescription();
-        System.out.println("Choose encryption type: ");
-        int i = 0;
-        for (EncryptionType elem: EncryptionType.values()) {
-            System.out.println(i + ". " + elem);
-            i++;
-        }
-        Scanner sc = new Scanner(System.in);
-        int option = sc.nextInt();
-        rd.encryptionType = EncryptionType.values()[option];
-        System.out.println("Choose how many parts: ");
-        option = sc.nextInt();
-        String[] parts = new String[option];
-        rd.parts = parts;
+    public static void initRep(Configuration config, int encType, int parts) {
+        Configuration.StorageDescription rd = new Configuration.StorageDescription();
+        rd.type = rd.FILE;
+        rd.encryptionType = EncryptionType.values()[encType];
+        rd.parts = new String[parts];
         try {
-
-
-        for (i = 0; i < option; i++) {
-            rd.parts[i] = "file" + i + ".dpm";
-            File file = new File(rd.parts[i]);
-            file.createNewFile();
-        }
-        config.repositories.add(rd);
-        config.writeRepToFile();
+            for (int i = 0; i < parts; i++) {
+                rd.parts[i] = "file" + i + ".dpm";
+                File file = new File(rd.parts[i]);
+                file.createNewFile();
+            }
+            config.repositories.add(rd);
+            config.writeRepToFile();
         } catch (Exception ex) {
-            throw new Exception;
+            throw new RuntimeException(ex);
         }
     }
+
+    public static void addPassword(String alias, Credentials cred, Configuration config, String masterPassword) throws IOException {
+        for (Configuration.StorageDescription rd: config.repositories) {
+            PasswordStorage rep = PasswordRepositoryFactory.getRepository(rd);
+            rep.addEntry(alias, cred, masterPassword);
+        }
+    }
+
 }
