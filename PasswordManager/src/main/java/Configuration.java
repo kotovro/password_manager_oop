@@ -14,10 +14,10 @@ public class Configuration {
         public String[] parts;
         public EncryptionType encryptionType;
     }
-    public LinkedList<StorageDescription> repositories = new LinkedList<>();
+    public LinkedList<StorageDescription> storages = new LinkedList<>();
 
 
-    public void readReposFromFile(String file) {
+    public void readStoragesFromFile(String file) {
         File f = new File(file);
         if(f.exists() && !f.isDirectory()) {
             Scanner sc;
@@ -34,14 +34,15 @@ public class Configuration {
                 } catch (JsonProcessingException e) {
                     throw new RuntimeException(e);
                 }
-                repositories.add(rd);
+                storages.add(rd);
             }
+            sc.close();
         }
     }
-    public void writeRepToFile() throws IOException {
+    public void writeStoragesToFile() throws IOException {
         FileWriter fw = new FileWriter(configFile);
         ObjectMapper mapper = new ObjectMapper();
-        for (StorageDescription rd: repositories) {
+        for (StorageDescription rd: storages) {
             String str = String.format("%s%n", mapper.writeValueAsString(rd));
             fw.write(str);
         }
@@ -49,7 +50,7 @@ public class Configuration {
     }
     public Configuration(String execName) {
         String fileName = execName + ".config";
-        readReposFromFile(fileName);
+        readStoragesFromFile(fileName);
         configFile = fileName;
     }
 }

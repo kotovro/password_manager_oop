@@ -1,12 +1,13 @@
 import java.io.File;
 import java.io.IOException;
+import java.util.UUID;
 
 public class PasswordManagerUtils {
 
     public static Credentials showPassword(String alias, Configuration config, String masterPassword) throws IOException {
         Credentials cred = null;
-        for (Configuration.StorageDescription rd: config.repositories) {
-            PasswordStorage rep = PasswordRepositoryFactory.getRepository(rd);
+        for (Configuration.StorageDescription rd: config.storages) {
+            PasswordStorage rep = PasswordStorageFactory.getStorage(rd);
             cred = rep.getEntry(alias, masterPassword);
             if (cred != null) {
                 return cred;
@@ -15,29 +16,29 @@ public class PasswordManagerUtils {
         return null;
     }
 
-    public static void initRep(Configuration config, int encType, int parts) {
-        Configuration.StorageDescription rd = new Configuration.StorageDescription();
-        rd.type = rd.FILE;
-        rd.encryptionType = EncryptionType.values()[encType];
-        rd.parts = new String[parts];
-        try {
-            for (int i = 0; i < parts; i++) {
-                rd.parts[i] = "file" + i + ".dpm";
-                File file = new File(rd.parts[i]);
-                file.createNewFile();
-            }
-            config.repositories.add(rd);
-            config.writeRepToFile();
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
+    public static void addStorage(Configuration config, int encType, int parts, String type) throws IOException {
+        Configuration.StorageDescription sd = new Configuration.StorageDescription();
+        sd.type = type;
+        sd.encryptionType = EncryptionType.values()[encType];
+        sd.parts = new String[parts];
+        switch (type) {
+            case Configuration.StorageDescription.FILE:
+                FilePasswordStorage.createFileStorage(sd);
         }
+        config.storages.add(sd);
+        config.writeStoragesToFile();
     }
 
     public static void addPassword(String alias, Credentials cred, Configuration config, String masterPassword) throws IOException {
-        for (Configuration.StorageDescription rd: config.repositories) {
-            PasswordStorage rep = PasswordRepositoryFactory.getRepository(rd);
+        for (Configuration.StorageDescription rd: config.storages) {
+            PasswordStorage rep = PasswordStorageFactory.getStorage(rd);
             rep.addEntry(alias, cred, masterPassword);
         }
+    }
+    public static void removePassword(String alias, Credentials cred, Configuration config, String masterPassword) {
+//        for() {
+//
+//        }
     }
 
 }

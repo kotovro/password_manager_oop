@@ -1,3 +1,3 @@
 public enum EncryptionType {
-    BASE_64,
+    SIMPLE,
 }

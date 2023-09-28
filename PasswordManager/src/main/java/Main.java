@@ -1,3 +1,4 @@
+import java.io.IOException;
 import java.util.Scanner;
 
 public class Main {
@@ -17,7 +18,7 @@ public class Main {
             printHelp("PassMan");
             return;
         }
-        if (!ia.getCommand().equals(InputArgs.Commands.LIST) && !ia.getCommand().equals(InputArgs.Commands.INIT) && ia.getAlias() == null) {
+        if (!ia.getCommand().equals(InputArgs.Commands.LIST) && !ia.getCommand().equals(InputArgs.Commands.ADD_STORAGE) && ia.getAlias() == null) {
             System.err.println("Insufficient arguments.");
             printHelp("PassMan");
             return;
@@ -46,7 +47,7 @@ public class Main {
             // show all aliases
         } else if (ia.getCommand().equals(InputArgs.Commands.UPDATE)) {
             // update alias
-        } else if (ia.getCommand().equals(InputArgs.Commands.INIT)) {
+        } else if (ia.getCommand().equals(InputArgs.Commands.ADD_STORAGE)) {
             System.out.println("Choose encryption type: ");
             int i = 0;
             for (EncryptionType elem: EncryptionType.values()) {
@@ -58,7 +59,14 @@ public class Main {
 
             System.out.println("Choose how many parts: ");
             int parts = sc.nextInt();
-            PasswordManagerUtils.initRep(config, encType, parts);
+            String type = Configuration.StorageDescription.FILE;
+            try {
+                PasswordManagerUtils.addStorage(config, encType, parts, type);
+            } catch (IOException e) {
+                System.out.println("Error creating storage:\n" + e.getMessage());
+            }
+        } else if (ia.getCommand().equals(InputArgs.Commands.REMOVE)) {
+
         }
 
     }

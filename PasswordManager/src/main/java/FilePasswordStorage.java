@@ -1,6 +1,8 @@
 import java.io.*;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.UUID;
+
 
 public class FilePasswordStorage implements PasswordStorage {
 
@@ -9,6 +11,18 @@ public class FilePasswordStorage implements PasswordStorage {
     public FilePasswordStorage(Configuration.StorageDescription rd) {
         this.crypto = CryptoFactory.getCrypto(rd.encryptionType);
         this.parts = rd.parts;
+    }
+
+    public static void createFileStorage(Configuration.StorageDescription sd) {
+        try {
+            for (int i = 0; i < sd.parts.length; i++) {
+                sd.parts[i] = UUID.randomUUID() + ".dpm";
+                File file = new File(sd.parts[i]);
+                file.createNewFile();
+            }
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     @Override
@@ -22,6 +36,7 @@ public class FilePasswordStorage implements PasswordStorage {
                     throw new RuntimeException("Alias already exists");
                 }
             }
+            sc.close();
         }
         Random random = new Random();
         String encrypted = crypto.encrypt(cred, masterPassword);
@@ -58,11 +73,17 @@ public class FilePasswordStorage implements PasswordStorage {
                     encrypted += line.split("\\s+")[1];
                 }
             }
+            sc.close();
         }
         Credentials res = null;
         if (encrypted.length() != 0) {
             res = crypto.decrypt(encrypted, masterPassword);
         }
         return res;
+    }
+
+    @Override
+    public void removeEntry(String alias, String masterPassword) throws IOException {
+
     }
 }

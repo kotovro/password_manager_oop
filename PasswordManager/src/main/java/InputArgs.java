@@ -1,6 +1,4 @@
 import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.Locale;
 
 public class InputArgs {
 
@@ -15,8 +13,9 @@ public class InputArgs {
         public static final String ADD = "add";
         public static final String LIST = "list";
         public static final String UPDATE = "update";
-        public static final String INIT = "init";
-        public static final String[] validCommands = {GET, ADD, LIST, UPDATE, INIT};
+        public static final String ADD_STORAGE = "add-storage";
+        public static final String REMOVE = "remove";
+        public static final String[] validCommands = {GET, ADD, LIST, UPDATE, ADD_STORAGE, REMOVE};
     }
 
     private final String command;
@@ -30,7 +29,10 @@ public class InputArgs {
             command = null;
             return;
         }
-        if (args.length > 1 && (command.equals(Commands.GET) || command.equals(Commands.UPDATE) || command.equals(Commands.ADD))) {
+        if (args.length > 1 && (command.equals(Commands.GET)
+                || command.equals(Commands.UPDATE)
+                || command.equals(Commands.ADD)
+        || command.equals(Commands.REMOVE))) {
             alias = args[1].toLowerCase();
         } else {
             alias = null;
