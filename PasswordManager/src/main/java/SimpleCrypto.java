@@ -1,4 +1,4 @@
-public class CryptoBase64 implements CryptoProvider {
+public class SimpleCrypto implements CryptoProvider {
     @Override
     public byte[] encrypt(byte[] credentials, byte[] masterPassword) {
         return xorWithKey(credentials, masterPassword);
