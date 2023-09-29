@@ -46,7 +46,7 @@ public class FilePasswordStorage implements PasswordStorage {
             int length = random.nextInt(0, encrypted.length() - curPos);
             if (length > 0) {
                 output = new BufferedWriter(new FileWriter(parts[i], true));
-                output.append(alias + " " + encrypted.substring(curPos, curPos + length));
+                output.append("\n" + alias + " " + encrypted.substring(curPos, curPos + length));
                 output.close();
             }
             curPos += length;
@@ -56,7 +56,7 @@ public class FilePasswordStorage implements PasswordStorage {
         }
         if (encrypted.length() > curPos) {
             output = new BufferedWriter(new FileWriter(parts[parts.length - 1], true));
-            output.append(alias + " " + encrypted.substring(curPos));
+            output.append("\n" + alias + " " + encrypted.substring(curPos));
             output.close();
         }
     }
@@ -84,6 +84,22 @@ public class FilePasswordStorage implements PasswordStorage {
 
     @Override
     public void removeEntry(String alias, String masterPassword) throws IOException {
-
+        for(String part: parts) {
+            StringBuilder sb = new StringBuilder();
+            File file = new File(part);
+            Scanner sc = new Scanner(new FileReader(file));
+            while (sc.hasNextLine()) {
+                String line = sc.nextLine();
+                if (!line.split("\\s+")[0].equals(alias)) {
+                    sb.append(line)
+                            .append(System.getProperty("line.separator"));
+                }
+            }
+            sc.close();
+            Writer output = new BufferedWriter(new FileWriter(part));
+            output.append(sb.toString());
+            output.close();
+        }
     }
+
 }

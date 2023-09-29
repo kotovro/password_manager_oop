@@ -1,30 +1,56 @@
-import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
 
 public class InputArgs {
 
-    private String alias;
+    public String login;
+    public String password;
+    public String alias;
 
     public String getAlias() {
         return alias;
     }
 
-    public class Commands {
-        public static final String GET = "get";
-        public static final String ADD = "add";
-        public static final String LIST = "list";
-        public static final String UPDATE = "update";
-        public static final String ADD_STORAGE = "add-storage";
-        public static final String REMOVE = "remove";
-        public static final String[] validCommands = {GET, ADD, LIST, UPDATE, ADD_STORAGE, REMOVE};
+    public enum Commands {
+        GET("get"),
+        ADD("add"),
+        LIST("list"),
+        UPDATE("update"),
+        ADD_STORAGE("add-storage"),
+        REMOVE("del");
+
+        private final String commandText;
+
+        Commands(String command){
+            this.commandText = command;
+        }
+        public String getCommandText() {
+            return commandText;
+        }
+        private static final Map<String, Commands> lookup = new HashMap<>();
+        private static final LinkedList<String> allCommands = new LinkedList<>();
+        static {
+            for (Commands command : Commands.values()) {
+                lookup.put(command.getCommandText(), command);
+                allCommands.add(command.getCommandText());
+            }
+        }
+        public static LinkedList<String> allCommands() {
+            return allCommands;
+        }
+        public static Commands command(String commandText) {
+            return lookup.get(commandText);
+        }
     }
 
-    private final String command;
-    public String getCommand() {
+    public  Commands command;
+    public Commands getCommand() {
         return command;
     }
     public InputArgs(String[] args) {
-        if (args.length > 0 && Arrays.asList(Commands.validCommands).contains(args[0].toLowerCase())) {
-            command = args[0].toLowerCase();
+        if (args.length > 0 && Commands.allCommands().contains(args[0].toLowerCase())) {
+            command = Commands.command(args[0].toLowerCase());
         } else {
             command = null;
             return;
@@ -32,8 +58,14 @@ public class InputArgs {
         if (args.length > 1 && (command.equals(Commands.GET)
                 || command.equals(Commands.UPDATE)
                 || command.equals(Commands.ADD)
-        || command.equals(Commands.REMOVE))) {
+                || command.equals(Commands.REMOVE))) {
             alias = args[1].toLowerCase();
+            if (args.length > 2) {
+                login = args[2];
+                if (args.length > 3) {
+                    password = args[3];
+                }
+            }
         } else {
             alias = null;
         }

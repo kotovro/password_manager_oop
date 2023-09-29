@@ -17,6 +17,10 @@ public interface CryptoProvider {
         Credentials cred = mapper.readValue(decoded, Credentials.class);
         return cred;
     }
-    byte[] encrypt(byte[] credentials, byte[] masterPassword);
-    byte[] decrypt(byte[] cryptoString, byte[] masterPassword);
+    default byte[] encrypt(byte[] credentials, byte[] masterPassword) {
+        return new byte[0];
+    }
+    default byte[] decrypt(byte[] cryptoString, byte[] masterPassword) {
+        return new byte[0];
+    };
 }

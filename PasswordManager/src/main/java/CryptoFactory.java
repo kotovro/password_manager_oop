@@ -4,6 +4,9 @@ public class CryptoFactory {
             case SIMPLE: {
                 return new SimpleCrypto();
             }
+            case AES: {
+                return new AESCrypto();
+            }
         }
         return null;
     }

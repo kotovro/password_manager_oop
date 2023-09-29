@@ -21,7 +21,7 @@ public class Credentials {
 
 
 
-    public Credentials(String password, String login) {
+    public Credentials(String login, String password) {
         this.password = password;
         this.login = login;
     }

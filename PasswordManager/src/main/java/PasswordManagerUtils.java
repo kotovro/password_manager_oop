@@ -35,10 +35,11 @@ public class PasswordManagerUtils {
             rep.addEntry(alias, cred, masterPassword);
         }
     }
-    public static void removePassword(String alias, Credentials cred, Configuration config, String masterPassword) {
-//        for() {
-//
-//        }
+    public static void removePassword(String alias, Configuration config, String masterPassword) throws IOException {
+        for (Configuration.StorageDescription rd: config.storages) {
+            PasswordStorage rep = PasswordStorageFactory.getStorage(rd);
+            rep.removeEntry(alias, masterPassword);
+        }
     }
 
 }
