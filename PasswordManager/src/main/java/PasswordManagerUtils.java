@@ -1,5 +1,6 @@
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.UUID;
 
 public class PasswordManagerUtils {
@@ -8,10 +9,15 @@ public class PasswordManagerUtils {
         Credentials cred = null;
         for (Configuration.StorageDescription rd: config.storages) {
             PasswordStorage rep = PasswordStorageFactory.getStorage(rd);
-            cred = rep.getEntry(alias, masterPassword);
-            if (cred != null) {
-                return cred;
+            try {
+                cred = rep.getEntry(alias, masterPassword);
+                if (cred != null) {
+                    return cred;
+                }
+            } catch (Exception ex) {
+
             }
+
         }
         return null;
     }
@@ -30,6 +36,9 @@ public class PasswordManagerUtils {
     }
 
     public static void addPassword(String alias, Credentials cred, Configuration config, String masterPassword) throws IOException {
+        if (isPasswordExists(alias, config)) {
+            throw new RuntimeException("Alias already exists");
+        }
         for (Configuration.StorageDescription rd: config.storages) {
             PasswordStorage rep = PasswordStorageFactory.getStorage(rd);
             rep.addEntry(alias, cred, masterPassword);
@@ -38,8 +47,54 @@ public class PasswordManagerUtils {
     public static void removePassword(String alias, Configuration config, String masterPassword) throws IOException {
         for (Configuration.StorageDescription rd: config.storages) {
             PasswordStorage rep = PasswordStorageFactory.getStorage(rd);
-            rep.removeEntry(alias, masterPassword);
+            try {
+                rep.removeEntry(alias, masterPassword);
+            } catch (Exception ex) {
+
+            }
         }
     }
 
+    public static void updatePassword(String alias, Credentials cred, Configuration config, String masterPassword) throws IOException {
+        for (Configuration.StorageDescription rd: config.storages) {
+            PasswordStorage rep = PasswordStorageFactory.getStorage(rd);
+            try {
+                rep.updateEntry(alias, cred, masterPassword);
+            } catch (Exception ex) {
+
+            }
+        }
+    }
+    public static boolean isPasswordExists(String alias, Configuration config) throws IOException {
+        for (Configuration.StorageDescription rd: config.storages) {
+            PasswordStorage rep = PasswordStorageFactory.getStorage(rd);
+            if (rep.isEntryExists(alias)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    public static HashSet<String> listPasswords(Configuration config, String masterPassword) throws IOException {
+        HashSet<String> result = new HashSet<>();
+        for (Configuration.StorageDescription rd: config.storages) {
+            PasswordStorage rep = PasswordStorageFactory.getStorage(rd);
+            try {
+                result.addAll(rep.listEntries(masterPassword));
+            } catch (Exception ex) {
+
+            }
+        }
+        return result;
+    }
+
+    public static void changePassword(Configuration config, String masterPassword, String newPassword) {
+        for (Configuration.StorageDescription rd: config.storages) {
+            PasswordStorage rep = PasswordStorageFactory.getStorage(rd);
+            try {
+                rep.changePassword(masterPassword, newPassword);
+            } catch (Exception ex) {
+
+            }
+        }
+    }
 }

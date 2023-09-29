@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Scanner;
 
 public class Main {
@@ -25,7 +26,10 @@ public class Main {
             ia.command = InputArgs.Commands.values()[scanner.nextInt()];
             scanner.nextLine();
         }
-        if (!ia.getCommand().equals(InputArgs.Commands.LIST) && !ia.getCommand().equals(InputArgs.Commands.ADD_STORAGE) && ia.getAlias() == null) {
+        if (!ia.getCommand().equals(InputArgs.Commands.LIST)
+                && !ia.getCommand().equals(InputArgs.Commands.CHANGE_PASSWORD)
+                && !ia.getCommand().equals(InputArgs.Commands.ADD_STORAGE)
+                && ia.getAlias() == null) {
             System.out.println("Enter alias:");
             ia.alias = scanner.nextLine();
         }
@@ -34,7 +38,11 @@ public class Main {
                 // get and print password
                 try {
                     Credentials cred = PasswordManagerUtils.showPassword(ia.getAlias(), config, masterPassword);
-                    System.out.println("Login: " + cred.getLogin() + "\nPassword: " + cred.getPassword());
+                    if (cred != null) {
+                        System.out.println("Login: " + cred.getLogin() + "\nPassword: " + cred.getPassword());
+                    } else {
+                        System.out.println("Error getting password");
+                    }
                 } catch (java.io.IOException ex) {
                     System.out.println("Error getting password");
                 }
@@ -60,10 +68,32 @@ public class Main {
             }
             case LIST: {
                 // show all aliases
-                //break;
+                try {
+                    HashSet<String> passwords = PasswordManagerUtils.listPasswords(config, masterPassword);
+                    for (String alias: passwords) {
+                        System.out.println(alias);
+                    }
+                } catch (IOException e) {
+                    System.out.println("Error retrieving passwords list:\n" + e.getMessage());
+                }
+                break;
             }
             case UPDATE: {
                 // update alias
+                if (ia.login == null) {
+                    System.out.println("Enter login:");
+                    ia.login = scanner.nextLine();
+                }
+                if (ia.password == null) {
+                    System.out.println("Enter password:");
+                    ia.password = scanner.nextLine();
+                }
+                Credentials cred = new Credentials(ia.login, ia.password);
+                try {
+                    PasswordManagerUtils.updatePassword(ia.getAlias(), cred, config, masterPassword);
+                } catch (java.io.IOException ex) {
+                    System.out.println("Error updating entry:\n" + ex.getMessage());
+                }
                 break;
             }
             case ADD_STORAGE: {
@@ -93,6 +123,11 @@ public class Main {
                     System.out.println("Error deleting entry:\n" + e.getMessage());
                 }
                 break;
+            }
+            case CHANGE_PASSWORD: {
+                System.out.println("Enter new master password:");
+                String newPassword = scanner.nextLine();
+                PasswordManagerUtils.changePassword(config, masterPassword, newPassword);
             }
         }
 

@@ -1,4 +1,5 @@
 import java.io.*;
+import java.util.HashSet;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.UUID;
@@ -27,17 +28,6 @@ public class FilePasswordStorage implements PasswordStorage {
 
     @Override
     public void addEntry(String alias, Credentials cred, String masterPassword) throws IOException {
-        for(String part: parts) {
-            File file = new File(part);
-            Scanner sc = new Scanner(new FileReader(file));
-            while (sc.hasNextLine()) {
-                String line = sc.nextLine().split("\\s+")[0];
-                if (line.equals(alias)) {
-                    throw new RuntimeException("Alias already exists");
-                }
-            }
-            sc.close();
-        }
         Random random = new Random();
         String encrypted = crypto.encrypt(cred, masterPassword);
         int curPos = 0;
@@ -46,7 +36,7 @@ public class FilePasswordStorage implements PasswordStorage {
             int length = random.nextInt(0, encrypted.length() - curPos);
             if (length > 0) {
                 output = new BufferedWriter(new FileWriter(parts[i], true));
-                output.append("\n" + alias + " " + encrypted.substring(curPos, curPos + length));
+                output.append(alias + " " + encrypted.substring(curPos, curPos + length) + "\n");
                 output.close();
             }
             curPos += length;
@@ -56,7 +46,7 @@ public class FilePasswordStorage implements PasswordStorage {
         }
         if (encrypted.length() > curPos) {
             output = new BufferedWriter(new FileWriter(parts[parts.length - 1], true));
-            output.append("\n" + alias + " " + encrypted.substring(curPos));
+            output.append(alias + " " + encrypted.substring(curPos) + "\n");
             output.close();
         }
     }
@@ -71,6 +61,7 @@ public class FilePasswordStorage implements PasswordStorage {
                 String line = sc.nextLine();
                 if (line.split("\\s+")[0].equals(alias)) {
                     encrypted += line.split("\\s+")[1];
+                    break;
                 }
             }
             sc.close();
@@ -84,13 +75,16 @@ public class FilePasswordStorage implements PasswordStorage {
 
     @Override
     public void removeEntry(String alias, String masterPassword) throws IOException {
+        if (getEntry(alias, masterPassword) == null) {
+            return;
+        }
         for(String part: parts) {
             StringBuilder sb = new StringBuilder();
             File file = new File(part);
             Scanner sc = new Scanner(new FileReader(file));
             while (sc.hasNextLine()) {
                 String line = sc.nextLine();
-                if (!line.split("\\s+")[0].equals(alias)) {
+                if (line.trim().length() > 0 && !line.split("\\s+")[0].equals(alias)) {
                     sb.append(line)
                             .append(System.getProperty("line.separator"));
                 }
@@ -100,6 +94,56 @@ public class FilePasswordStorage implements PasswordStorage {
             output.append(sb.toString());
             output.close();
         }
+    }
+
+    @Override
+    public boolean isEntryExists(String alias) throws IOException {
+        for(String part: parts) {
+            File file = new File(part);
+            Scanner sc = new Scanner(new FileReader(file));
+            while (sc.hasNextLine()) {
+                String line = sc.nextLine().split("\\s+")[0];
+                if (line.equals(alias)) {
+                    sc.close();
+                    return true;
+                }
+            }
+            sc.close();
+        }
+        return false;
+    }
+
+    @Override
+    public HashSet<String> listEntries(String masterPassword) throws IOException {
+        HashSet<String> allAliases = listEntries();
+        HashSet<String> result = new HashSet<>();
+        for (String candidate: allAliases) {
+            if (getEntry(candidate, masterPassword) != null) {
+                result.add(candidate);
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public void changePassword(String oldPassword, String newPassword) throws IOException {
+        
+    }
+
+    private HashSet<String> listEntries() throws IOException{
+        HashSet<String> aliases = new HashSet<>();
+        for(String part: parts) {
+            File file = new File(part);
+            Scanner sc = new Scanner(new FileReader(file));
+            while (sc.hasNextLine()) {
+                String line = sc.nextLine().split("\\s+")[0];
+                if (line.trim().length() > 0) {
+                    aliases.add(line);
+                }
+            }
+            sc.close();
+        }
+        return aliases;
     }
 
 }

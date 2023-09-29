@@ -7,6 +7,9 @@ public class CryptoFactory {
             case AES: {
                 return new AESCrypto();
             }
+            case PLAIN_TEXT:{
+                return new PlainCrypto();
+            }
         }
         return null;
     }

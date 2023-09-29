@@ -13,12 +13,14 @@ public class InputArgs {
     }
 
     public enum Commands {
-        GET("get"),
         ADD("add"),
-        LIST("list"),
+        GET("get"),
         UPDATE("update"),
+        REMOVE("del"),
+        LIST("list"),
         ADD_STORAGE("add-storage"),
-        REMOVE("del");
+        CHANGE_PASSWORD("change-password");
+
 
         private final String commandText;
 
